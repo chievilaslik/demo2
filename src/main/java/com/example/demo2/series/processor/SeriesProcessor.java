@@ -7,11 +7,14 @@ import net.objecthunter.exp4j.ExpressionBuilder;
 import java.util.concurrent.ForkJoinPool;
 
 public class SeriesProcessor {
+    private static final ForkJoinPool FORK_JOIN_POOL = new ForkJoinPool();
+
     public static double processSeries(String function, double startPoint, int nTerms) {
-        double epsilon = 1e-6;
-        SeriesSumTask task = new SeriesSumTask(function, startPoint, 1, nTerms, epsilon);
-        ForkJoinPool forkJoinPool = new ForkJoinPool();
-        return forkJoinPool.invoke(task);
+        int numProcessors = Runtime.getRuntime().availableProcessors();
+        int threshold = Math.max(nTerms / (2 * numProcessors), 100);
+        double epsilon = 1e-9;
+        SeriesSumTask task = new SeriesSumTask(function, startPoint, 1, nTerms, epsilon, threshold);
+        return FORK_JOIN_POOL.invoke(task);
     }
 
     public static double calculateTerm(String function, double startPoint, int n) {

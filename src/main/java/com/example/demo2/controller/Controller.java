@@ -79,11 +79,12 @@ public class Controller {
     @FXML
     public void onCalculateLimitButtonClick() {
         try {
+
             long startTime = System.nanoTime();
 
             String function = functionInput.getText();
             String limit = limitXInput.getText();
-            double epsilon = 0.0001;
+            double epsilon = 1e-9;
 
             double limitValue;
             if (limit.equalsIgnoreCase("inf")) {
