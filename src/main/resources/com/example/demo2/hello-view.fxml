@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.Button?>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.demo2.controller.Controller">
+    <center>
+        <VBox alignment="CENTER" spacing="20.0">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+            </padding>
+
+            <Label text="Limit x:" />
+            <TextField fx:id="limitXInput" />
+
+            <Label text="Function:"/>
+            <TextField fx:id="functionInput"/>
+
+            <Label text="Start Point:"/>
+            <TextField fx:id="startPointInput"/>
+
+            <Label text="Number of Terms:"/>
+            <TextField fx:id="nTermsInput"/>
+
+            <Label text="Result:" />
+            <Label fx:id="resultLabel" />
+
+            <Button fx:id="calculateSeriesButton" text="Calculate Series" onAction="#onCalculateSeriesButtonClick"/>
+
+            <Button fx:id="calculateLimitButton" text="Calculate Limit" onAction="#onCalculateLimitButtonClick"/>
+
+            <Label fx:id="executionTimeLabel" />
+
+        </VBox>
+    </center>
+</BorderPane>
