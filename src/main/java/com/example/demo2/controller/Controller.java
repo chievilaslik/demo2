@@ -101,8 +101,12 @@ public class Controller {
 
             executionTimeLabel.setText("Execution time: " + duration + " ms");
 
-            String formattedResult = String.format("%.10f", result);
-            resultLabel.setText(formattedResult);
+            if (Double.isInfinite(result)) {
+                resultLabel.setText("Infinity");
+            } else {
+                String formattedResult = String.format("%.10f", result);
+                resultLabel.setText(formattedResult);
+            }
 
         } catch (NumberFormatException e) {
             resultLabel.setText("Invalid input. Please check your input values.");
@@ -112,5 +116,4 @@ public class Controller {
             resultLabel.setText("An error occurred. Please try again.");
         }
     }
-
 }

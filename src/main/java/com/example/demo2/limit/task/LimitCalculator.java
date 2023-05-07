@@ -9,11 +9,15 @@ public class LimitCalculator {
     private static final ForkJoinPool forkJoinPool = new ForkJoinPool();
 
     public static double calculateLimit(Function<Double, Double> function, double argument, double epsilon) {
-        return calculateLimitRecursive(forkJoinPool, function, argument, epsilon);
+        double result = calculateLimitRecursive(forkJoinPool, function, argument, epsilon);
+        if (result == Double.POSITIVE_INFINITY) {
+            System.out.println("Inf");
+        }
+        return result;
     }
 
     private static double calculateLimitRecursive(ForkJoinPool forkJoinPool, Function<Double, Double> function, double argument, double epsilon) {
-        LimitTask task = new LimitTask(function, argument, epsilon, 0, 10);
+        LimitTask task = new LimitTask(function, argument, epsilon, 0, 1000);
         return forkJoinPool.invoke(task);
     }
 
@@ -36,21 +40,25 @@ public class LimitCalculator {
         protected Double compute() {
             if (end - start <= 2) {
                 double sum = 0.0;
+                int count = 0;
                 for (int i = start + 1; i <= end; i++) {
-                    double leftPoint = argument - epsilon * ((double) i / (end + 1));
-                    double rightPoint = argument + epsilon * ((double) i / (end + 1));
+                    double point = argument + epsilon * ((double) i / (end + 1));
 
-                    double leftValue = function.apply(leftPoint);
-                    double rightValue = function.apply(rightPoint);
+                    double value = function.apply(point);
 
-                    // Если хотя бы одно из значений не является числом (NaN), вернуть 0.0
-                    if (Double.isNaN(leftValue) || Double.isNaN(rightValue)) {
+                    // Если значение не является числом (NaN), вернуть 0.0
+                    if (Double.isNaN(value)) {
                         return 0.0;
                     }
 
-                    sum += (leftValue + rightValue) / 2;
+                    if (Double.isInfinite(value)) {
+                        return Double.POSITIVE_INFINITY;
+                    }
+
+                    sum += value;
+                    count++;
                 }
-                return sum;
+                return sum / count;
             } else {
                 int mid = (start + end) / 2;
                 LimitTask leftTask = new LimitTask(function, argument, epsilon, start, mid);
@@ -60,7 +68,11 @@ public class LimitCalculator {
                 double rightResult = rightTask.compute();
                 double leftResult = leftTask.join();
 
-                return leftResult + rightResult;
+                if (Double.isInfinite(leftResult) || Double.isInfinite(rightResult)) {
+                    return Double.POSITIVE_INFINITY;
+                }
+
+                return (leftResult + rightResult) / 2;
             }
         }
     }

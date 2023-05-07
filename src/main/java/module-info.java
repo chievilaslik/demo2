@@ -3,6 +3,8 @@ module com.example.demo2 {
     requires javafx.fxml;
     requires exp4j;
     requires java.scripting;
+    requires org.testng;
+    requires org.junit.jupiter.api;
 
 
     opens com.example.demo2 to javafx.fxml;
