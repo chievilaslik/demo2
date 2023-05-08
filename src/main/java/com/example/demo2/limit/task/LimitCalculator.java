@@ -10,6 +10,13 @@ public class LimitCalculator {
 
     public static double calculateLimit(Function<Double, Double> function, double argument, double epsilon) {
         double result = calculateLimitRecursive(FORK_JOIN_POOL, function, argument, epsilon);
+        if (argument == Double.POSITIVE_INFINITY) {
+            double testValue = 1e50;
+            double testResult = function.apply(testValue);
+            if (testResult > 1e50) {
+                return Double.POSITIVE_INFINITY;
+            }
+        }
         if (result == Double.POSITIVE_INFINITY) {
             System.out.println("Inf");
         }
@@ -42,8 +49,7 @@ public class LimitCalculator {
         @Override
         protected Double compute() {
             if (end - start <= 2 * n) {
-                double sum = 0.0;
-                int count = 0;
+                double maxValue = 0.0;
                 for (int i = start + 1; i <= end; i++) {
                     double point = argument + epsilon * ((double) i / (end + 1));
 
@@ -53,14 +59,15 @@ public class LimitCalculator {
                         return 0.0;
                     }
 
-                    if (Double.isInfinite(value)) {
-                        return Double.POSITIVE_INFINITY;
-                    }
-
-                    sum += value;
-                    count++;
+                    maxValue = Math.max(maxValue, value);
                 }
-                return sum / count;
+
+                double threshold = 1e50;
+                if (maxValue >= threshold) {
+                    return Double.POSITIVE_INFINITY;
+                }
+
+                return maxValue;
             } else {
                 int mid = (start + end) / 2;
                 LimitTask leftTask = new LimitTask(function, argument, epsilon, start, mid, n);

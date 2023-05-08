@@ -2,6 +2,7 @@ package com.example.demo2.controller;
 
 import com.example.demo2.series.processor.SeriesProcessor;
 import com.example.demo2.limit.processor.LimitProcessor;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -42,8 +43,6 @@ public class Controller {
     @FXML
     public void onCalculateSeriesButtonClick() {
         try {
-            long startTime = System.nanoTime();
-
             String function = functionInput.getText();
             double startPoint = Double.parseDouble(startPointInput.getText());
             String nTermsText = nTermsInput.getText();
@@ -54,15 +53,21 @@ public class Controller {
                 nTerms = Integer.parseInt(nTermsText);
             }
 
-            double result = SeriesProcessor.processSeries(function, startPoint, nTerms);
+            // Выполняем вычисления в отдельном потоке
+            new Thread(() -> {
+                long startTime = System.nanoTime();
+                double result = SeriesProcessor.processSeries(function, startPoint, nTerms);
+                long endTime = System.nanoTime();
+                long duration = (endTime - startTime) / 1000000;
 
-            long endTime = System.nanoTime();
-            long duration = (endTime - startTime) / 1000000;
+                // Обновляем пользовательский интерфейс с помощью Platform.runLater()
+                Platform.runLater(() -> {
+                    executionTimeLabel.setText("Execution time: " + duration + " ms");
 
-            executionTimeLabel.setText("Execution time: " + duration + " ms");
-
-            String formattedResult = String.format("%.10f", result);
-            resultLabel.setText(formattedResult);
+                    String formattedResult = String.format("%.10f", result);
+                    resultLabel.setText(formattedResult);
+                });
+            }).start();
 
         } catch (NumberFormatException e) {
             resultLabel.setText("Invalid input. Please check your input values.");
@@ -73,15 +78,13 @@ public class Controller {
         }
     }
 
+
     /**
      * Обрабатывает клик по кнопке "Calculate Limit" и выполняет расчет предела функции.
      */
     @FXML
     public void onCalculateLimitButtonClick() {
         try {
-
-            long startTime = System.nanoTime();
-
             String function = functionInput.getText();
             String limit = limitXInput.getText();
             double epsilon = 1e-9;
@@ -95,19 +98,25 @@ public class Controller {
                 limitValue = Double.parseDouble(limit);
             }
 
-            double result = LimitProcessor.calculateLimit(function, limitValue, epsilon);
+            // Выполняем вычисления в отдельном потоке
+            new Thread(() -> {
+                long startTime = System.nanoTime();
+                double result = LimitProcessor.calculateLimit(function, limitValue, epsilon);
+                long endTime = System.nanoTime();
+                long duration = (endTime - startTime) / 1000000;
 
-            long endTime = System.nanoTime();
-            long duration = (endTime - startTime) / 1000000;
+                // Обновляем пользовательский интерфейс с помощью Platform.runLater()
+                Platform.runLater(() -> {
+                    executionTimeLabel.setText("Execution time: " + duration + " ms");
 
-            executionTimeLabel.setText("Execution time: " + duration + " ms");
-
-            if (Double.isInfinite(result)) {
-                resultLabel.setText("Infinity");
-            } else {
-                String formattedResult = String.format("%.10f", result);
-                resultLabel.setText(formattedResult);
-            }
+                    if (Double.isInfinite(result)) {
+                        resultLabel.setText("Infinity");
+                    } else {
+                        String formattedResult = String.format("%.10f", result);
+                        resultLabel.setText(formattedResult);
+                    }
+                });
+            }).start();
 
         } catch (NumberFormatException e) {
             resultLabel.setText("Invalid input. Please check your input values.");
@@ -117,4 +126,5 @@ public class Controller {
             resultLabel.setText("An error occurred. Please try again.");
         }
     }
+
 }
